@@ -1,4 +1,8 @@
 # rpg-game
 
 First of all, set up like this in Phpmyadmin
-![Screen Shot 2024-11-16 at 8 25 51 AM](https://github.com/user-attachments/assets/d3e9a857-2e0b-447d-9ea7-ea6a88f0c1cc)
+UserCredential table
+<img width="858" alt="Screen Shot 2024-11-19 at 6 28 16 AM" src="https://github.com/user-attachments/assets/2a2b387f-982f-465d-a979-976c7aee1306">
+
+UserDetail table
+<img width="986" alt="Screen Shot 2024-11-19 at 6 28 48 AM" src="https://github.com/user-attachments/assets/9aa47476-c5dd-4b18-828d-f41d022e6557">
