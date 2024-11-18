@@ -16,8 +16,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Check if the username already exists
-    $sql = "SELECT id FROM users WHERE username = :username";
+    // Check if the username already exists in UserCredential table
+    $sql = "SELECT UserName FROM UserCredential WHERE UserName = :username";
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute(['username' => $username]);
@@ -32,20 +32,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Insert the new user into the database
-    $sql = "INSERT INTO users (username, password) VALUES (:username, :password)";
+    // Begin a transaction
+    $pdo->beginTransaction();
+
     try {
-        $stmt = $pdo->prepare($sql);
+        // Insert into UserCredential table
+        $sqlCredential = "INSERT INTO UserCredential (UserName, Password) VALUES (:username, :password)";
+        $stmtCredential = $pdo->prepare($sqlCredential);
+
         // Hash the password securely
         $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-        $stmt->execute([
+        $stmtCredential->execute([
             'username' => $username,
             'password' => $hashed_password,
         ]);
 
+        // Insert into UserDetail table
+        $sqlDetail = "INSERT INTO UserDetail (UserName, DateCreated) VALUES (:username, :datecreated)";
+        $stmtDetail = $pdo->prepare($sqlDetail);
+
+        $stmtDetail->execute([
+            'username' => $username,
+            'datecreated' => date('Y-m-d'), // Current date
+        ]);
+
+        // Commit the transaction
+        $pdo->commit();
+
         echo "Registration successful!";
     } catch (Exception $e) {
+        // Roll back the transaction if something failed
+        $pdo->rollBack();
         echo ("Error inserting new user: " . $e->getMessage());
         echo "An error occurred. Please try again later.";
         exit();
