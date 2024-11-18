@@ -1,6 +1,6 @@
 # rpg-game
 
-First of all, set up like this in Phpmyadmin
+First of all, set up tables like this in Phpmyadmin
 
 UserCredential table
 <img width="858" alt="Screen Shot 2024-11-19 at 6 28 16 AM" src="https://github.com/user-attachments/assets/2a2b387f-982f-465d-a979-976c7aee1306">
