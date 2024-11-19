@@ -8,7 +8,6 @@ UserCredential table
 UserDetail table
 <img width="986" alt="Screen Shot 2024-11-19 at 6 28 48 AM" src="https://github.com/user-attachments/assets/9aa47476-c5dd-4b18-828d-f41d022e6557">
 
-JUST TESTING
 Game Flow
 
     Summary
