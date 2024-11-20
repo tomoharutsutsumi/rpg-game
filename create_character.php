@@ -22,6 +22,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Setting default level to 1
     $level = 1;
 
+    // Items description
+    switch ($starter_item) {
+        case 'sword':
+            $effect = "+10 attack, +5 defense";
+            break;
+        case 'shield':
+            $effect = "+5 attack, +15 defense";
+            break;
+        case 'bow':
+            $effect = "+8 attack, +4 defense";
+            break;
+        case 'axe':
+            $effect = "+12 attack, +3 defense";
+            break;
+        case 'spear':
+            $effect = "+9 attack, +6 defense";
+            break;
+        case 'dagger':
+            $effect = "+7 attack, +2 defense";
+            break;
+        case 'mace':
+            $effect = "+11 attack, +8 defense";
+            break;
+        case 'staff':
+            $effect = "+6 attack, +10 defense";
+            break;
+        case 'crossbow':
+            $effect = "+10 attack, +4 defense";
+            break;
+        case 'halberd':
+            $effect = "+14 attack, +7 defense";
+            break;
+    }
+
+
     // Check if the character ID is unique
     $sql_check = "SELECT * FROM CharacterDetails WHERE CharacterID = ?";
     $stmt_check = $pdo->prepare($sql_check);
@@ -44,7 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt_insert->execute()) {
             // Insert the inventory for the new character into CharacterInventory
-            $inventory_id = 100 + $uid; // InventoryID is 100 + UID
+            $inventory_id = 100 + $char_id; // InventoryID is 100 + CharacterID
             $sql_inventory = "INSERT INTO CharacterInventory (CharacterID, InventoryID) VALUES (?, ?)";
             $stmt_inventory = $pdo->prepare($sql_inventory);
             $stmt_inventory->bindParam(1, $char_id, PDO::PARAM_INT);
@@ -54,14 +89,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Insert the initial inventory record into Inventory table with the selected starter item
                 $sql_inventory_table = "INSERT INTO Inventory (InventoryID, Size, Item) VALUES (?, ?, ?)";
                 $stmt_inventory_table = $pdo->prepare($sql_inventory_table);
-                $size = 10; // Default size
+                $size = 10; // Default size, you can modify this as needed
                 $initial_item = $starter_item; // Use the starter item selected by the user
                 $stmt_inventory_table->bindParam(1, $inventory_id, PDO::PARAM_INT);
                 $stmt_inventory_table->bindParam(2, $size, PDO::PARAM_INT);
                 $stmt_inventory_table->bindParam(3, $initial_item, PDO::PARAM_STR);
 
                 if ($stmt_inventory_table->execute()) {
-                    echo "Character, CharacterInventory, and Inventory created successfully!";
+                    echo "Character, CharacterInventory, and Inventory created successfully!<br><br>";
+                    echo "<strong>Character Details:</strong><br>";
+                    echo "Character ID: " . htmlspecialchars($char_id) . "<br>";
+                    echo "Level: " . htmlspecialchars($level) . "<br>";
+                    echo "Starter Item: " . htmlspecialchars($starter_item) . "<br>";
+                    echo "Item Effects: " . htmlspecialchars($effect) . "<br>";
+                    //--------------Quest Selection Part---------------
+                    echo "<a href='battle.php'><button>Continue</button></a>";
                 } else {
                     echo "Character and CharacterInventory created, but there was an error creating the inventory record: " . $stmt_inventory_table->errorInfo()[2];
                 }
