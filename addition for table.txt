@@ -1,0 +1,12 @@
+Table: Quests
+QID: INT (Primary Key, Auto Increment)
+Location: VARCHAR(255)
+Reward: INT (represents level-ups)
+IntroText: TEXT (scene-setting description)
+
+
+Table: CharacterDetails
+CharacterID: INT (Primary Key, Auto Increment)
+PlayerName: VARCHAR(255)
+CurrentLevel: INT
+ActiveQuest: INT (Foreign Key referencing Quests.QID, NULL if none)
