@@ -10,127 +10,243 @@ $_SESSION['uid'] = 5;
 // Simulate a logged-in user with QID = 1
 $_SESSION['qid'] = 1;
 
-// Simulate a logged-in user
-if (isset($_SESSION['uid'])) {
-    $uid = $_SESSION['uid'];
-} else {
+// Check if user is logged in
+if (!isset($_SESSION['uid'])) {
     die("User not logged in. Please log in to continue.");
 }
+$uid = $_SESSION['uid'];
 
-// Get the QID from the selected quest (assumed to be stored in session after selection)
-if (isset($_SESSION['qid'])) {
-    $qid = $_SESSION['qid'];
-} else {
+// Check if quest is selected
+if (!isset($_SESSION['qid'])) {
     die("Quest not selected. Please select a quest first.");
 }
+$qid = $_SESSION['qid'];
 
-// Get character details from database using UID
-$sql_character = "SELECT * FROM CharacterDetails WHERE UID = ?";
-$stmt_character = $pdo->prepare($sql_character);
-$stmt_character->bindParam(1, $uid, PDO::PARAM_INT);
-$stmt_character->execute();
-$character = $stmt_character->fetch();
+// Fetch character details from the database
+if (!isset($_SESSION['character_details'])) {
+    $sql_character = "SELECT CharacterDetails.*, Items.Name AS ItemName, Items.AttackBonus, Items.DefenseBonus 
+                      FROM CharacterDetails 
+                      JOIN Items ON CharacterDetails.ItemID = Items.ItemID 
+                      WHERE UID = ?";
+    $stmt_character = $pdo->prepare($sql_character);
+    $stmt_character->bindParam(1, $uid, PDO::PARAM_INT);
+    $stmt_character->execute();
+    $character = $stmt_character->fetch();
 
-if (!$character) {
-    die("Character not found. Please create a character first.");
+    if (!$character) {
+        die("Character not found. Please create a character first.");
+    }
+
+    // Store character details in session
+    $_SESSION['character_details'] = $character;
+    $_SESSION['player_health'] = 50 + $character['Level'] * 10; // Set initial player health
+} else {
+    $character = $_SESSION['character_details'];
 }
 
-$char_id = $character['CharacterID'];
-$player_level = $character['Level'];
-$item_id = $character['ItemID'];
+// Fetch monster details from the database
+if (!isset($_SESSION['monster_details'])) {
+    $sql_monster = "SELECT Monsters.*, Items.Name AS ItemName, Items.AttackBonus, Items.DefenseBonus 
+                     FROM Monsters 
+                     JOIN Items ON Monsters.ItemID = Items.ItemID 
+                     WHERE QID = ? LIMIT 1";
+    $stmt_monster = $pdo->prepare($sql_monster);
+    $stmt_monster->bindParam(1, $qid, PDO::PARAM_INT);
+    $stmt_monster->execute();
+    $monster = $stmt_monster->fetch();
 
-// Get character item details from Items table
-$sql_item = "SELECT * FROM Items WHERE ItemID = ?";
-$stmt_item = $pdo->prepare($sql_item);
-$stmt_item->bindParam(1, $item_id, PDO::PARAM_INT);
-$stmt_item->execute();
-$item = $stmt_item->fetch();
+    if (!$monster) {
+        die("Monster not found for the selected quest.");
+    }
 
-if (!$item) {
-    die("Character Item not found.");
+    // Store monster details in session
+    $_SESSION['monster_details'] = $monster;
+    $_SESSION['monster_health'] = 50 + $monster['Level'] * 8; // Set initial monster health
+} else {
+    $monster = $_SESSION['monster_details'];
 }
 
-// Player stats
-$player_health = 50 + $player_level * 10; // Base health plus level multiplier
-$player_attack = 10 + $character['Level'] + $item['AttackBonus']; // Base attack plus level and item attack bonus
-$player_defense = 5 + $character['Level'] + $item['DefenseBonus']; // Base defense plus level and item defense bonus
+// Set player and monster health from session
+$player_health = &$_SESSION['player_health'];
+$monster_health = &$_SESSION['monster_health'];
 
+// Calculate player stats
+$player_attack = 30 + $character['Level'] + $character['AttackBonus'];
+$player_defense = 5 + $character['Level'] + $character['DefenseBonus'];
 
-// Get monster details from the Monsters table using QID
-$sql_monster = "SELECT * FROM Monsters WHERE QID = ? LIMIT 1";
-$stmt_monster = $pdo->prepare($sql_monster);
-$stmt_monster->bindParam(1, $qid, PDO::PARAM_INT);
-$stmt_monster->execute();
-$monster = $stmt_monster->fetch();
-
-if (!$monster) {
-    die("Monster not found for the selected quest.");
-}
-
-$monster_item_id = $monster['ItemID'];
-
-// Get monster item details from Items table
-$sql_monster_item = "SELECT * FROM Items WHERE ItemID = ?";
-$stmt_monster_item = $pdo->prepare($sql_monster_item);
-$stmt_monster_item->bindParam(1, $monster_item_id, PDO::PARAM_INT);
-$stmt_monster_item->execute();
-$monster_item = $stmt_monster_item->fetch();
-
-if (!$monster_item) {
-    die("Monster item not found.");
-}
-
-// Monster stats
-$monster_health = 50 + $monster['Level'] * 8; // Example health calculation based on level
-$monster_attack = 8 + $monster['Level'] + $monster_item['AttackBonus']; // Base attack plus level and item attack bonus
-$monster_defense = 4 + $monster['Level'] + $monster_item['DefenseBonus']; // Base defense plus level and item defense bonus
-
+// Calculate monster stats
+$monster_attack = 28 + $monster['Level'] + $monster['AttackBonus'];
+$monster_defense = 4 + $monster['Level'] + $monster['DefenseBonus'];
 
 // Function to handle battle turn
 function battle_turn(&$attacker, &$defender) {
-    $damage = max(0, $attacker['attack'] - $defender['defense']);
-    $defender['health'] -= $damage;
-    return $damage;
+    // Determine if the attack is a critical hit (33% chance)
+    $is_critical = rand(1, 100) <= 33;
+    $critical_multiplier = $is_critical ? 1.25 : 1;
+
+    // Calculate damage dealt
+    $damage = max(1, (($attacker['attack'] * $critical_multiplier) - $defender['defense']) / 2);
+    $defender['health'] = max(0, $defender['health'] - $damage); // Ensure health does not drop below 0
+
+    return ['damage' => $damage, 'is_critical' => $is_critical];
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'fight') {
-    // Monster's turn
-    $monster_damage = battle_turn(
-        ['attack' => $monster_attack, 'health' => &$player_health],
-        ['attack' => $player_attack, 'health' => &$monster_health]
-    );
+// Player's and Monster's stats as arrays
+$player_stats = [
+    'attack' => $player_attack,
+    'defense' => $player_defense,
+    'health' => &$player_health // Pass health by reference
+];
 
-    // Player's turn
-    $player_damage = battle_turn(
-        ['attack' => $player_attack, 'health' => &$monster_health],
-        ['attack' => $monster_attack, 'health' => &$player_health]
-    );
+$monster_stats = [
+    'attack' => $monster_attack,
+    'defense' => $monster_defense,
+    'health' => &$monster_health // Pass health by reference
+];
 
-    // Determine the outcome and store it in session
-    if ($player_health <= 0) {
-        $_SESSION['battle_result'] = "You have been defeated by the " . htmlspecialchars($monster_item['Name']) . ".";
-    } elseif ($monster_health <= 0) {
-        $_SESSION['battle_result'] = "You have defeated the " . htmlspecialchars($monster_item['Name']) . "!";
+// Handle battle logic based on user action
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
+    if ($_POST['action'] == 'fight') {
+        // Player's turn to attack the monster
+        $turn_result = battle_turn($player_stats, $monster_stats);
+        $player_damage = $turn_result['damage'];
+        $is_critical = $turn_result['is_critical'];
 
-        // Update character level upon quest completion
-        $new_level = $player_level + 1;
-        $sql_update_level = "UPDATE CharacterDetails SET Level = ? WHERE CharacterID = ?";
-        $stmt_update = $pdo->prepare($sql_update_level);
-        $stmt_update->bindParam(1, $new_level, PDO::PARAM_INT);
-        $stmt_update->bindParam(2, $char_id, PDO::PARAM_INT);
-        if ($stmt_update->execute()) {
-            $_SESSION['level_up'] = "Congratulations! You have leveled up to level " . htmlspecialchars($new_level) . ".";
-        } else {
-            $_SESSION['level_up'] = "Error updating character level.";
+        $_SESSION['battle_status'] = "You dealt $player_damage damage to the monster.";
+        if ($is_critical) {
+            $_SESSION['battle_status'] .= " It was a critical hit!";
         }
-    } else {
-        // Store ongoing battle status in session
-        $_SESSION['battle_status'] = "Your Health: " . htmlspecialchars($player_health) . "<br>" .
-                                     htmlspecialchars($monster_item['Name']) . " Health: " . htmlspecialchars($monster_health);
+        $_SESSION['next_turn'] = 'monster';
+    } elseif ($_POST['action'] == 'monster_turn') {
+        // Monster's turn to attack the player
+        $turn_result = battle_turn($monster_stats, $player_stats);
+        $monster_damage = $turn_result['damage'];
+        $_SESSION['battle_status'] = "The monster dealt $monster_damage damage to you.";
+        if ($is_critical) {
+            $_SESSION['battle_status'] .= " It was a critical hit!";
+        }
+        $_SESSION['next_turn'] = 'player';
     }
 
-    // Redirect back to the battle page to display results
-    header("Location: battle.php");
+    // Check if the player or monster health is 0 and set the outcome
+    if ($player_health <= 0) {
+        $_SESSION['battle_status'] = "You have been defeated by the monster. Game over.
+        <br>
+        <form action=\"quest_list.php\" method=\"POST\">
+            <input type=\"hidden\" name=\"action\" value=\"fight\">
+            <button type=\"submit\">Back to Quest List</button>
+        </form>";
+        $_SESSION['next_turn'] = null;
+
+        // Cleanup session variables
+        unset($_SESSION['battle_state']);
+        unset($_SESSION['player_health']);
+        unset($_SESSION['monster_health']);
+    } elseif ($monster_health <= 0) {
+        // Increase character level by 1
+        $_SESSION['character_details']['Level'] += 1;
+    
+        // Store the new level in a variable
+        $new_level = $_SESSION['character_details']['Level'];
+        
+        // Update character level in the database
+        $sql_update_level = "UPDATE CharacterDetails SET Level = Level + 1 WHERE CharacterID = ?";
+        $stmt_update_level = $pdo->prepare($sql_update_level);
+        $stmt_update_level->execute([$_SESSION['character_details']['CharacterID']]);
+    
+        // Set the battle status with level up message
+        $_SESSION['battle_status'] = "Congratulations! You have defeated the monster.
+        <br>
+        You level up, your character is now level $new_level!
+        <br>
+    
+        <form action=\"quest_list.php\" method=\"POST\">
+            <input type=\"hidden\" name=\"action\" value=\"fight\">
+            <button type=\"submit\">Back to Quest List</button>
+        </form>";
+        
+        $_SESSION['next_turn'] = null;
+    }
+    
+
+    // Update health in session after each turn
+    $_SESSION['player_health'] = $player_stats['health'];
+    $_SESSION['monster_health'] = $monster_stats['health'];
+
+    // Redirect to avoid form resubmission
+    header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
+
+// Display character and monster details
+$player_health = $_SESSION['player_health'];
+$monster_health = $_SESSION['monster_health'];
 ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Battle Mechanics</title>
+</head>
+<body>
+    <h1>Battle</h1>
+
+    <!-- Display Character Details -->
+    <h2>Character Details</h2>
+    <table border="1">
+        <tr>
+            <th>Character ID</th>
+            <th>Level</th>
+            <th>Item</th>
+            <th>Health</th>
+        </tr>
+        <tr>
+            <td><?php echo htmlspecialchars($character['CharacterID'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($character['Level'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($character['ItemName'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($player_health); ?></td>
+        </tr>
+    </table>
+
+    <!-- Display Monster Details -->
+    <h2>Monster Details</h2>
+    <table border="1">
+        <tr>
+            <th>Monster ID</th>
+            <th>Level</th>
+            <th>Item</th>
+            <th>Health</th>
+        </tr>
+        <tr>
+            <td><?php echo htmlspecialchars($monster['MonsterID'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($monster['Level'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($monster['ItemName'] ?? ''); ?></td>
+            <td><?php echo htmlspecialchars($monster_health); ?></td>
+        </tr>
+    </table>
+
+    <!-- Display Battle Status -->
+    <?php
+    if (isset($_SESSION['battle_status'])) {
+        echo "<p>" . $_SESSION['battle_status'] . "</p>";
+        unset($_SESSION['battle_status']);
+    }
+    ?>
+
+    <!-- Battle Action Form -->
+    <form action="" method="POST">
+        <?php if (!isset($_SESSION['next_turn']) || $_SESSION['next_turn'] == 'player'): ?>
+            <input type="hidden" name="action" value="fight">
+            <button type="submit" class="fight_button">Fight!</button>
+        <?php elseif ($_SESSION['next_turn'] == 'monster'): ?>
+            <input type="hidden" name="action" value="monster_turn">
+            <button type="submit" class="fight_button">Monster's Turn</button>
+        <?php endif; ?>
+    </form>
+    <br>
+    <form action="battle.php" method="POST">
+        <input type="hidden" name="action" value="fight">
+        <button type="submit">Go back</button>
+    </form>
+</body>
+</html>
