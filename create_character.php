@@ -26,35 +26,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     switch ($starter_item) {
         case 'sword':
             $effect = "+10 attack, +5 defense";
+            $item_id = 1;
             break;
         case 'shield':
             $effect = "+5 attack, +15 defense";
+            $item_id = 2;
             break;
         case 'bow':
             $effect = "+8 attack, +4 defense";
+            $item_id = 3;
             break;
         case 'axe':
             $effect = "+12 attack, +3 defense";
+            $item_id = 4;
             break;
         case 'spear':
             $effect = "+9 attack, +6 defense";
+            $item_id = 5;
             break;
         case 'dagger':
             $effect = "+7 attack, +2 defense";
+            $item_id = 6;
             break;
         case 'mace':
             $effect = "+11 attack, +8 defense";
+            $item_id = 7;
             break;
         case 'staff':
             $effect = "+6 attack, +10 defense";
+            $item_id = 8;
             break;
         case 'crossbow':
             $effect = "+10 attack, +4 defense";
+            $item_id = 9;
             break;
         case 'halberd':
             $effect = "+14 attack, +7 defense";
+            $item_id = 10;
             break;
     }
+
 
 
     // Check if the character ID is unique
@@ -70,12 +81,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     } else {
         // Insert the new character into the database
-        $sql_insert = "INSERT INTO CharacterDetails (CharacterID, UID, Level, Item) VALUES (?, ?, ?, ?)";
+        $sql_insert = "INSERT INTO CharacterDetails (CharacterID, UID, Level, ItemID) VALUES (?, ?, ?, ?)";
         $stmt_insert = $pdo->prepare($sql_insert);
         $stmt_insert->bindParam(1, $char_id, PDO::PARAM_INT);
         $stmt_insert->bindParam(2, $uid, PDO::PARAM_INT);
         $stmt_insert->bindParam(3, $level, PDO::PARAM_INT);
-        $stmt_insert->bindParam(4, $starter_item, PDO::PARAM_STR);
+        $stmt_insert->bindParam(4, $item_id, PDO::PARAM_STR);
 
         if ($stmt_insert->execute()) {
             // Insert the inventory for the new character into CharacterInventory
@@ -87,10 +98,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($stmt_inventory->execute()) {
                 // Insert the initial inventory record into Inventory table with the selected starter item
-                $sql_inventory_table = "INSERT INTO Inventory (InventoryID, Size, Item) VALUES (?, ?, ?)";
+                $sql_inventory_table = "INSERT INTO Inventory (InventoryID, Size, ItemID) VALUES (?, ?, ?)";
                 $stmt_inventory_table = $pdo->prepare($sql_inventory_table);
                 $size = 10; // Default size, you can modify this as needed
-                $initial_item = $starter_item; // Use the starter item selected by the user
+                $initial_item_id = $item_id; // Use the starter item selected by the user
                 $stmt_inventory_table->bindParam(1, $inventory_id, PDO::PARAM_INT);
                 $stmt_inventory_table->bindParam(2, $size, PDO::PARAM_INT);
                 $stmt_inventory_table->bindParam(3, $initial_item, PDO::PARAM_STR);
