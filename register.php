@@ -1,4 +1,5 @@
 <?php
+session_start(); // Start the session
 // register.php
 
 // Include the database connection file
@@ -48,6 +49,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'password' => $hashed_password,
         ]);
 
+        // Get the last inserted ID
+        $user_id = $pdo->lastInsertId();
+
         // Insert into UserDetail table
         $sqlDetail = "INSERT INTO UserDetail (UserName, DateCreated) VALUES (:username, :datecreated)";
         $stmtDetail = $pdo->prepare($sqlDetail);
@@ -60,11 +64,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Commit the transaction
         $pdo->commit();
 
-        echo "Registration successful!";
+        // Set the user ID into the session
+        $_SESSION['user_id'] = $user_id;
+        header("Location: character_creation.php");
+        exit();
     } catch (Exception $e) {
-        // Roll back the transaction if something failed
         $pdo->rollBack();
-        echo ("Error inserting new user: " . $e->getMessage());
         echo "An error occurred. Please try again later.";
         exit();
     }
