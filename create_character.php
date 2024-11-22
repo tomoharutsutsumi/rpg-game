@@ -1,8 +1,13 @@
 <?php
 session_start();
 
-// Simulate a logged-in user with UID = 5
-$_SESSION['uid'] = 5;
+if (isset($_SESSION['user_id'])) {
+    $uid = $_SESSION['user_id'];
+    // Use $user_id as needed
+} else {
+    echo "User ID not found in session.";
+    // Handle the error as needed
+}
 
 // Include the database connection file
 require_once 'db_connection.php';
@@ -11,13 +16,6 @@ require_once 'db_connection.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $char_id = $_POST['char_id'];
     $starter_item = $_POST['starter_item'];
-
-    // Assuming UID is stored in session after login
-    if (isset($_SESSION['uid'])) {
-        $uid = $_SESSION['uid'];
-    } else {
-        die("User not logged in. Please log in to create a character.");
-    }
 
     // Setting default level to 1
     $level = 1;
@@ -101,10 +99,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $sql_inventory_table = "INSERT INTO Inventory (InventoryID, Size, ItemID) VALUES (?, ?, ?)";
                 $stmt_inventory_table = $pdo->prepare($sql_inventory_table);
                 $size = 10; // Default size, you can modify this as needed
-                $initial_item_id = $item_id; // Use the starter item selected by the user
                 $stmt_inventory_table->bindParam(1, $inventory_id, PDO::PARAM_INT);
                 $stmt_inventory_table->bindParam(2, $size, PDO::PARAM_INT);
-                $stmt_inventory_table->bindParam(3, $initial_item, PDO::PARAM_STR);
+                $stmt_inventory_table->bindParam(3, $item_id, PDO::PARAM_STR);
 
                 if ($stmt_inventory_table->execute()) {
                     echo "Character, CharacterInventory, and Inventory created successfully!<br><br>";
