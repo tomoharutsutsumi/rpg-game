@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION["username"] = $username;
 
                 // Redirect to the welcome page
-                header("Location: welcome.php");
+                header("Location: character_creation.php");
                 exit();
             } else {
                 // Display an error message for invalid password
