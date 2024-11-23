@@ -1,34 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Battle Page</title>
-</head>
-<body>
-    <h1>Battle!</h1>
+<?php
+// Include necessary files and start the session
+require 'db_connection.php';
+session_start();
 
-    <?php
-    session_start();
+// Simulate a monster being defeated
+$monster_defeated = true; // This would be determined by your battle mechanics logic
 
-    // Display battle results or status if available
-    if (isset($_SESSION['battle_result'])) {
-        echo "<p>" . $_SESSION['battle_result'] . "</p>";
-        unset($_SESSION['battle_result']);
+if ($monster_defeated) {
+    echo "<p>You defeated a monster!</p>";
+
+    // Check if a quest is active
+    if (isset($_SESSION['qid']) && isset($_SESSION['target_count'])) {
+        // Increment quest progress
+        $_SESSION['current_count']++;
+
+        // Check if the quest is completed
+        if ($_SESSION['current_count'] >= $_SESSION['target_count']) {
+            // Mark the quest as completed in the database
+            $sql = "UPDATE quests SET status = 'completed' WHERE id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $_SESSION['qid']);
+            $stmt->execute();
+
+            // Notify the player of quest completion
+            echo "<p>Congratulations! You completed the quest: " . htmlspecialchars($_SESSION['quest_name']) . ".</p>";
+            echo "<p>Reward earned: " . $_SESSION['reward'] . " gold!</p>";
+
+            // Clear quest-related session data
+            unset($_SESSION['qid'], $_SESSION['quest_name'], $_SESSION['target_count'], $_SESSION['current_count'], $_SESSION['reward']);
+        } else {
+            // Notify the player of progress
+            echo "<p>Quest progress: " . $_SESSION['current_count'] . "/" . $_SESSION['target_count'] . " monsters defeated.</p>";
+        }
+    } else {
+        echo "<p>No active quest. Keep fighting monsters to improve your skills!</p>";
     }
-
-    if (isset($_SESSION['level_up'])) {
-        echo "<p>" . $_SESSION['level_up'] . "</p>";
-        unset($_SESSION['level_up']);
-    }
-
-    if (isset($_SESSION['battle_status'])) {
-        echo "<p>" . $_SESSION['battle_status'] . "</p>";
-        unset($_SESSION['battle_status']);
-    }
-    ?>
-
-    <form action="battle_mechanics.php" method="POST">
-        <input type="hidden" name="action" value="fight">
-        <button type="submit">Fight!</button>
-    </form>
-</body>
-</html>
+} else {
+    echo "<p>You didn't defeat the monster. Better luck next time!</p>";
+}
+?>
