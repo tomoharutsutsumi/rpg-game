@@ -1,6 +1,7 @@
 <?php
-define('DB_SERVER', 'localhost');
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', ''); // Default password for XAMPP is an empty string
-define('DB_NAME', 'rpg');
+// Database configuration
+define('DB_HOST', 'localhost'); // Database host (default for XAMPP is 'localhost')
+define('DB_USER', 'root');      // Database username (default for XAMPP is 'root')
+define('DB_PASSWORD', '');     // Database password (default is empty for XAMPP)
+define('DB_NAME', 'rpg');       // Database name
 ?>

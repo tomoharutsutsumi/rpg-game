@@ -1,83 +1,41 @@
 <?php
-session_start(); // Start the session
-// register.php
+require_once 'db_connection.php'; // Include the database connection
+session_start();
 
-// Include the database connection file
-require_once 'db_connection.php';
+// Check if the form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username']);
+    $password = password_hash(trim($_POST['password']), PASSWORD_DEFAULT); // Hash the password securely
 
-// Process the form data when the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve and sanitize user inputs
-    $username = trim($_POST["username"]);
-    $password = trim($_POST["password"]);
+    // Check if the username already exists
+    $check_sql = "SELECT id FROM users WHERE username = ?";
+    $stmt = $conn->prepare($check_sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
 
-    // Validate inputs
-    if (empty($username) || empty($password)) {
-        echo "Please fill in all fields.";
-        exit();
-    }
+    if ($stmt->num_rows > 0) {
+        echo "Username already taken. Please choose another.";
+    } else {
+        // Insert the new user into the database
+        $stmt->close();
+        $insert_sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+        $stmt = $conn->prepare($insert_sql);
+        $stmt->bind_param("ss", $username, $password);
 
-    // Check if the username already exists in UserCredential table
-    $sql = "SELECT UserName FROM UserCredentials WHERE UserName = :username";
-    try {
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute(['username' => $username]);
-
-        if ($stmt->fetch()) {
-            echo "This username is already taken.";
+        if ($stmt->execute()) {
+            $_SESSION['loggedin'] = true;
+            $_SESSION['username'] = $username;
+            $_SESSION['user_id'] = $stmt->insert_id; // Store the user's ID in the session
+            header("Location: character_creation.php");
             exit();
+        } else {
+            echo "Error: Could not register user. Please try again.";
         }
-    } catch (Exception $e) {
-        echo ("Error checking username existence: " . $e->getMessage());
-        echo "An error occurred. Please try again later.";
-        exit();
     }
 
-    // Begin a transaction
-    $pdo->beginTransaction();
-
-    try {
-        // Insert into UserDetail table first
-        $sqlDetail = "INSERT INTO UserDetails (UserName, DateCreated) VALUES (:username, :datecreated)";
-        $stmtDetail = $pdo->prepare($sqlDetail);
-        $stmtDetail->execute([
-            'username' => $username,
-            'datecreated' => date('Y-m-d'), // Current date
-        ]);
-
-        $user_id = $pdo->lastInsertId(); // This should get the last inserted UID from UserDetails
-
-        // Insert into UserCredentials table
-        $sqlCredential = "INSERT INTO UserCredentials (UserName, UserPassword) VALUES (:username, :password)";
-        $stmtCredential = $pdo->prepare($sqlCredential);
-        // Hash the password securely
-        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-        $stmtCredential->execute([
-            'username' => $username,
-            'password' => $hashed_password,
-        ]);
-
-        // Insert into PlayerInfo table
-        $sqlPlayerInfo = "INSERT INTO PlayerInfo (UID, playedtime) VALUES (:uid, :playedtime)";
-        $stmtPlayerInfo = $pdo->prepare($sqlPlayerInfo);
-        $stmtPlayerInfo->execute([
-            'uid' => $user_id,
-            'playedtime' => 0 // Initial played time set to 0
-        ]);
-
-        // Commit the transaction
-        $pdo->commit();
-
-        // Set the user ID into the session
-        $_SESSION['user_id'] = $user_id;
-
-        // Redirect to character creation
-        header("Location: character_creation.php");
-        exit();
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        echo "An error occurred while inserting user details. Please try again later.";
-        exit();
-    }
+    $stmt->close();
 }
+
+$conn->close();
 ?>
