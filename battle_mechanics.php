@@ -4,17 +4,23 @@ session_start();
 // Include the database connection file
 require_once 'db_connection.php';
 
-// Simulate a logged-in user with UID = 5
-$_SESSION['uid'] = 5;
-
-// Simulate a logged-in user with QID = 1
-$_SESSION['qid'] = 1;
-
-// Check if user is logged in
-if (!isset($_SESSION['uid'])) {
-    die("User not logged in. Please log in to continue.");
+// Check if UID exists in the session
+if (isset($_SESSION['user_id'])) {
+    $uid = $_SESSION['user_id'];
+} else {
+    echo "User ID not found in session.";
+    // Handle the error or redirect
+    exit();
 }
-$uid = $_SESSION['uid'];
+
+// Get CharacterID from SESSION
+if (isset($_SESSION['character_id'])) {
+    $character_id = $_SESSION['character_id'];
+} else {
+    echo "Character ID not found in session.";
+    // Handle the error or redirect
+    exit();
+}
 
 // Check if quest is selected
 if (!isset($_SESSION['qid'])) {
@@ -22,14 +28,18 @@ if (!isset($_SESSION['qid'])) {
 }
 $qid = $_SESSION['qid'];
 
+// FOR TESTING: Uncomment if needed
+$qid = 1;
+
 // Fetch character details from the database
 if (!isset($_SESSION['character_details'])) {
-    $sql_character = "SELECT CharacterDetails.*, Items.Name AS ItemName, Items.AttackBonus, Items.DefenseBonus 
-                      FROM CharacterDetails 
-                      JOIN Items ON CharacterDetails.ItemID = Items.ItemID 
-                      WHERE UID = ?";
+    $sql_character = "SELECT CD.*, I.Name AS ItemName, I.AttackBonus, I.DefenseBonus 
+                      FROM CharacterDetails CD
+                      JOIN Items I ON CD.ItemID = I.ItemID
+                      WHERE CD.CharacterID = ? AND CD.UID = ?";
     $stmt_character = $pdo->prepare($sql_character);
-    $stmt_character->bindParam(1, $uid, PDO::PARAM_INT);
+    $stmt_character->bindParam(1, $character_id, PDO::PARAM_STR);
+    $stmt_character->bindParam(2, $uid, PDO::PARAM_INT);
     $stmt_character->execute();
     $character = $stmt_character->fetch();
 
@@ -46,10 +56,10 @@ if (!isset($_SESSION['character_details'])) {
 
 // Fetch monster details from the database
 if (!isset($_SESSION['monster_details'])) {
-    $sql_monster = "SELECT Monsters.*, Items.Name AS ItemName, Items.AttackBonus, Items.DefenseBonus 
-                     FROM Monsters 
-                     JOIN Items ON Monsters.ItemID = Items.ItemID 
-                     WHERE QID = ? LIMIT 1";
+    $sql_monster = "SELECT M.*, I.Name AS ItemName, I.AttackBonus, I.DefenseBonus 
+                    FROM Monsters M
+                    JOIN Items I ON M.ItemID = I.ItemID
+                    WHERE M.QID = ?";
     $stmt_monster = $pdo->prepare($sql_monster);
     $stmt_monster->bindParam(1, $qid, PDO::PARAM_INT);
     $stmt_monster->execute();
@@ -61,7 +71,7 @@ if (!isset($_SESSION['monster_details'])) {
 
     // Store monster details in session
     $_SESSION['monster_details'] = $monster;
-    $_SESSION['monster_health'] = 50 + $monster['Level'] * 8; // Set initial monster health
+    $_SESSION['monster_health'] = 50 + $monster['Level'] * 5; // Set initial monster health
 } else {
     $monster = $_SESSION['monster_details'];
 }
@@ -136,11 +146,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
             <input type=\"hidden\" name=\"action\" value=\"fight\">
             <button type=\"submit\">Back to Quest List</button>
         </form>";
+
         $_SESSION['next_turn'] = null;
 
         // Cleanup session variables
         unset($_SESSION['battle_state']);
         unset($_SESSION['player_health']);
+        unset($_SESSION['monster_details']);
         unset($_SESSION['monster_health']);
     } elseif ($monster_health <= 0) {
         // Increase character level by 1
@@ -159,13 +171,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         <br>
         You level up, your character is now level $new_level!
         <br>
-    
         <form action=\"quest_list.php\" method=\"POST\">
             <input type=\"hidden\" name=\"action\" value=\"fight\">
             <button type=\"submit\">Back to Quest List</button>
         </form>";
-        
+
         $_SESSION['next_turn'] = null;
+
+        // Cleanup session variables
+        unset($_SESSION['battle_state']);
+        unset($_SESSION['player_health']);
+        unset($_SESSION['monster_details']);
+        unset($_SESSION['monster_health']);
     }
     
 
@@ -243,10 +260,4 @@ $monster_health = $_SESSION['monster_health'];
             <button type="submit" class="fight_button">Monster's Turn</button>
         <?php endif; ?>
     </form>
-    <br>
-    <form action="battle.php" method="POST">
-        <input type="hidden" name="action" value="fight">
-        <button type="submit">Go back</button>
-    </form>
-</body>
-</html>
+

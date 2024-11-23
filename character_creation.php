@@ -3,6 +3,8 @@
     <title>Character Creation</title>
 </head>
 <body>
+    <p style="color: green; font-weight: bold;">User created successfully! You can now continue with your adventure.</p>
+
     <h1>Create Your Character</h1>
 
     <?php

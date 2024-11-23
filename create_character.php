@@ -1,21 +1,31 @@
 <?php
-session_start();
+session_start(); // Start the session
+// create_character.php
+
+// Include the database connection file
+require_once 'db_connection.php';
 
 if (isset($_SESSION['user_id'])) {
     $uid = $_SESSION['user_id'];
-    // Use $user_id as needed
+    // Use $uid as needed
 } else {
     echo "User ID not found in session.";
     // Handle the error as needed
 }
 
-// Include the database connection file
-require_once 'db_connection.php';
+// For testing
+// $uid = 999;
 
-// Handling form submission
+// Process the form data when the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $char_id = $_POST['char_id'];
+    $char_id = trim($_POST['char_id']);
     $starter_item = $_POST['starter_item'];
+
+    // Validate inputs
+    if (empty($char_id) || empty($starter_item)) {
+        echo "Please fill in all fields.";
+        exit();
+    }
 
     // Setting default level to 1
     $level = 1;
@@ -64,8 +74,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             break;
     }
 
-
-
     // Check if the character ID is unique
     $sql_check = "SELECT * FROM CharacterDetails WHERE CharacterID = ?";
     $stmt_check = $pdo->prepare($sql_check);
@@ -87,8 +95,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_insert->bindParam(4, $item_id, PDO::PARAM_STR);
 
         if ($stmt_insert->execute()) {
+            // Store CharacterID in the session
+            $_SESSION['character_id'] = $char_id;
+            
             // Insert the inventory for the new character into CharacterInventory
-            $inventory_id = 100 + $char_id; // InventoryID is 100 + CharacterID
+            $inventory_id = 100 + $uid; // InventoryID is 100 + CharacterID
             $sql_inventory = "INSERT INTO CharacterInventory (CharacterID, InventoryID) VALUES (?, ?)";
             $stmt_inventory = $pdo->prepare($sql_inventory);
             $stmt_inventory->bindParam(1, $char_id, PDO::PARAM_INT);
@@ -109,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     echo "Character ID: " . htmlspecialchars($char_id) . "<br>";
                     echo "Level: " . htmlspecialchars($level) . "<br>";
                     echo "Starter Item: " . htmlspecialchars($starter_item) . "<br>";
-                    echo "Item Effects: " . htmlspecialchars($effect) . "<br>";
+                    echo "Item Effects: " . htmlspecialchars($effect) . "<br>" . "<br>";
                     //--------------Quest Selection Part---------------
                     echo "<a href='battle.php'><button>Continue</button></a>";
                 } else {
