@@ -1,42 +1,27 @@
 <?php
-// Include database configuration
-require_once 'config.php';
+session_start();
+require_once 'db_connection.php';
 
-// Establish database connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['qid'])) {
+    $qid = $_POST['qid'];
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Obtener los detalles de la quest seleccionada
+    $query = "SELECT IntroText FROM quest WHERE QID = :qid";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute(['qid' => $qid]);
+    $quest = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($quest) {
+        unset($_SESSION['game_over']);
+        unset($_SESSION['next_turn']);
+        unset($_SESSION['player_health']);
+
+        $_SESSION['intro_text'] = $quest['IntroText'];
+        $_SESSION['selected_quest'] = $qid;
+        header("Location: quest_intro.php");
+        exit();
+    } else {
+        echo "Quest not found.";
+    }
 }
-
-// Get quest ID and player ID (assume PlayerID is passed via session or static for simplicity)
-$qid = $_POST['qid'];
-$characterID = 1; // Replace with session variable for actual user
-
-// Update the player's active quest
-$updateQuery = "UPDATE CharacterDetails SET ActiveQuest = ? WHERE CharacterID = ?";
-$stmt = $conn->prepare($updateQuery);
-$stmt->bind_param("ii", $qid, $characterID);
-
-if ($stmt->execute()) {
-    // Fetch and display quest intro text
-    $questQuery = "SELECT IntroText FROM Quests WHERE QID = ?";
-    $stmt2 = $conn->prepare($questQuery);
-    $stmt2->bind_param("i", $qid);
-    $stmt2->execute();
-    $stmt2->bind_result($introText);
-    $stmt2->fetch();
-
-    echo "<h1>Quest Selected</h1>";
-    echo "<p>$introText</p>";
-    echo "<a href='quests.php'>Back to Quests</a>";
-    
-    $stmt2->close();
-} else {
-    echo "Error: " . $stmt->error;
-}
-
-$stmt->close();
-$conn->close();
 ?>

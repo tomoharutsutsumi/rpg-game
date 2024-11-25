@@ -122,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     echo "Starter Item: " . htmlspecialchars($starter_item) . "<br>";
                     echo "Item Effects: " . htmlspecialchars($effect) . "<br>" . "<br>";
                     //--------------Quest Selection Part---------------
-                    echo "<a href='battle.php'><button>Continue</button></a>";
+                    echo "<a href='quests.php'><button>Continue to your aventure</button></a>";
                 } else {
                     echo "Character and CharacterInventory created, but there was an error creating the inventory record: " . $stmt_inventory_table->errorInfo()[2];
                 }

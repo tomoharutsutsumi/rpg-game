@@ -23,16 +23,16 @@ if (isset($_SESSION['character_id'])) {
 }
 
 // Check if quest is selected
-if (!isset($_SESSION['qid'])) {
+if (!isset($_SESSION['selected_quest'])) {
     die("Quest not selected. Please select a quest first.");
 }
-$qid = $_SESSION['qid'];
+$qid = $_SESSION['selected_quest'];
 
-// FOR TESTING: Uncomment if needed
-$qid = 1;
+// FOR TESTING
+// $qid = 1;
 
 // Fetch character details from the database
-if (!isset($_SESSION['character_details'])) {
+if (!isset($_SESSION['character_details']) || !isset($_SESSION['player_health'])) {
     $sql_character = "SELECT CD.*, I.Name AS ItemName, I.AttackBonus, I.DefenseBonus 
                       FROM CharacterDetails CD
                       JOIN Items I ON CD.ItemID = I.ItemID
@@ -140,17 +140,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
 
     // Check if the player or monster health is 0 and set the outcome
     if ($player_health <= 0) {
-        $_SESSION['battle_status'] = "You have been defeated by the monster. Game over.
-        <br>
-        <form action=\"quest_list.php\" method=\"POST\">
-            <input type=\"hidden\" name=\"action\" value=\"fight\">
-            <button type=\"submit\">Back to Quest List</button>
-        </form>";
-
+        $_SESSION['battle_status'] = "You have been defeated by the monster. Game over.";
+        $_SESSION['game_over'] = true;
         $_SESSION['next_turn'] = null;
 
         // Cleanup session variables
-        unset($_SESSION['battle_state']);
         unset($_SESSION['player_health']);
         unset($_SESSION['monster_details']);
         unset($_SESSION['monster_health']);
@@ -169,17 +163,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         // Set the battle status with level up message
         $_SESSION['battle_status'] = "Congratulations! You have defeated the monster.
         <br>
-        You level up, your character is now level $new_level!
-        <br>
-        <form action=\"quest_list.php\" method=\"POST\">
-            <input type=\"hidden\" name=\"action\" value=\"fight\">
-            <button type=\"submit\">Back to Quest List</button>
-        </form>";
-
+        You leveled up! Your character is now level $new_level!";
+        $_SESSION['game_over'] = true;
         $_SESSION['next_turn'] = null;
 
         // Cleanup session variables
-        unset($_SESSION['battle_state']);
         unset($_SESSION['player_health']);
         unset($_SESSION['monster_details']);
         unset($_SESSION['monster_health']);
@@ -251,13 +239,20 @@ $monster_health = $_SESSION['monster_health'];
     ?>
 
     <!-- Battle Action Form -->
-    <form action="" method="POST">
-        <?php if (!isset($_SESSION['next_turn']) || $_SESSION['next_turn'] == 'player'): ?>
-            <input type="hidden" name="action" value="fight">
-            <button type="submit" class="fight_button">Fight!</button>
-        <?php elseif ($_SESSION['next_turn'] == 'monster'): ?>
-            <input type="hidden" name="action" value="monster_turn">
-            <button type="submit" class="fight_button">Monster's Turn</button>
-        <?php endif; ?>
+    <?php if (!isset($_SESSION['game_over'])): ?>
+        <form action="" method="POST">
+            <?php if (!isset($_SESSION['next_turn']) || $_SESSION['next_turn'] == 'player'): ?>
+                <input type="hidden" name="action" value="fight">
+                <button type="submit">Fight!</button>
+            <?php elseif ($_SESSION['next_turn'] == 'monster'): ?>
+                <input type="hidden" name="action" value="monster_turn">
+                <button type="submit">Monster's Turn</button>
+            <?php endif; ?>
+        </form>
+    <?php else: ?>
+        <form action="quests.php" method="POST">
+            <button type="submit">Back to Quest List</button>
+        </form>
+    <?php endif; ?>
     </form>
 
