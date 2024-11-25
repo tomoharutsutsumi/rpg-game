@@ -1,6 +1,18 @@
 <?php
 require_once 'db_connection.php';
+?>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle History</title>
+    <link rel="stylesheet" href="player_info.css">
+</head>
+<body>
+
+<?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $player_name = $_POST['player_name'];
 
@@ -23,10 +35,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result) {
             $player_level = $result['level'];
             $average_level = round($result['average_level'], 2); // Round average to 2 decimals
-            
+
             // Display player's level, average level, and comparison
             echo "<div class='battle-history'>";
-            echo "<h2>Player Info</h2>";
+            echo "<h2>Battle History</h2>";
             echo "<p><strong>Player Name:</strong> " . htmlspecialchars($result['player_name']) . "</p>";
             echo "<p><strong>Your Level:</strong> " . htmlspecialchars($player_level) . "</p>";
             echo "<p><strong>Average Level of All Players:</strong> " . htmlspecialchars($average_level) . "</p>";
@@ -42,12 +54,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             echo "</div>";
         } else {
-            echo "<p>No battle history found for this player.</p>";
+            echo "<div class='battle-history'><p>No battle history found for this player.</p></div>";
         }
     } catch (PDOException $e) {
-        echo "<p>Error retrieving data: " . $e->getMessage() . "</p>";
+        echo "<div class='battle-history'><p>Error retrieving data: " . $e->getMessage() . "</p></div>";
     }
 } else {
-    echo "<p>Invalid request method.</p>";
+    echo "<div class='battle-history'><p>Invalid request method.</p></div>";
 }
 ?>
+</body>
+</html>

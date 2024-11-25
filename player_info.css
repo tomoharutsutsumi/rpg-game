@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #5d4a3c;
+    color: #e4c6a0;
+    text-align: center;
+    padding: 20px;
+}
+
+.battle-history {
+    background-color: #ad6b37;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    width: 50%;
+    text-align: left;
+}
+
+.battle-history h2 {
+    color: #e4c6a0;
+}
+
+.battle-history p {
+    margin: 10px 0;
+    color: #e4c6a0;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #ecb992;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    color: #5d4a3c;
+}
+
+button:hover {
+    background-color: #e4c6a0;
+    color: #5d4a3c;
+}
