@@ -167,6 +167,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action'])) {
         $_SESSION['game_over'] = true;
         $_SESSION['next_turn'] = null;
 
+        // Insert a new row into playerinfo table with UID and QID
+        $sql_insert_playerinfo = "INSERT INTO playerinfo (UID, completedQID) VALUES (?, ?)";
+        $stmt_insert_playerinfo = $pdo->prepare($sql_insert_playerinfo);
+        $stmt_insert_playerinfo->execute([$uid, $qid]);
+
         // Cleanup session variables
         unset($_SESSION['player_health']);
         unset($_SESSION['monster_details']);
