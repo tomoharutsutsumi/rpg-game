@@ -1,4 +1,13 @@
-<?php
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Character Creation</title>
+    <link rel="stylesheet" href="character_creation_styles.css">
+</head>
+<body>
+    <div class="creation-container">
+        <?php
 session_start(); // Start the session
 // create_character.php
 
@@ -143,3 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_insert->closeCursor();
 }
 ?>
+    
+    </div>
+</body>
+</html>

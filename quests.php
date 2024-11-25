@@ -1,4 +1,14 @@
-<?php
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quests</title>
+    <link rel="stylesheet" href="quest_styles.css">
+</head>
+<body>
+    <div class="quest-list">
+        <h1>Available Quests</h1>
+        <?php
 session_start();
 require_once 'db_connection.php';
 
@@ -24,3 +34,6 @@ if ($quests) {
     echo "<p>No quests available at the moment.</p>";
 }
 ?>
+    </div>
+</body>
+</html>
