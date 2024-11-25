@@ -1,22 +1,30 @@
 <?php
-session_start();
-
-// Simulate a logged-in user with UID = 5
-$_SESSION['uid'] = 5;
+session_start(); // Start the session
+// create_character.php
 
 // Include the database connection file
 require_once 'db_connection.php';
 
-// Handling form submission
+if (isset($_SESSION['user_id'])) {
+    $uid = $_SESSION['user_id'];
+    // Use $uid as needed
+} else {
+    echo "User ID not found in session.";
+    // Handle the error as needed
+}
+
+// For testing
+// $uid = 999;
+
+// Process the form data when the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $char_id = $_POST['char_id'];
+    $char_id = trim($_POST['char_id']);
     $starter_item = $_POST['starter_item'];
 
-    // Assuming UID is stored in session after login
-    if (isset($_SESSION['uid'])) {
-        $uid = $_SESSION['uid'];
-    } else {
-        die("User not logged in. Please log in to create a character.");
+    // Validate inputs
+    if (empty($char_id) || empty($starter_item)) {
+        echo "Please fill in all fields.";
+        exit();
     }
 
     // Setting default level to 1
@@ -66,8 +74,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             break;
     }
 
-
-
     // Check if the character ID is unique
     $sql_check = "SELECT * FROM CharacterDetails WHERE CharacterID = ?";
     $stmt_check = $pdo->prepare($sql_check);
@@ -89,8 +95,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_insert->bindParam(4, $item_id, PDO::PARAM_STR);
 
         if ($stmt_insert->execute()) {
+            // Store CharacterID in the session
+            $_SESSION['character_id'] = $char_id;
+            
             // Insert the inventory for the new character into CharacterInventory
-            $inventory_id = 100 + $char_id; // InventoryID is 100 + CharacterID
+            $inventory_id = 100 + $uid; // InventoryID is 100 + CharacterID
             $sql_inventory = "INSERT INTO CharacterInventory (CharacterID, InventoryID) VALUES (?, ?)";
             $stmt_inventory = $pdo->prepare($sql_inventory);
             $stmt_inventory->bindParam(1, $char_id, PDO::PARAM_INT);
@@ -101,10 +110,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $sql_inventory_table = "INSERT INTO Inventory (InventoryID, Size, ItemID) VALUES (?, ?, ?)";
                 $stmt_inventory_table = $pdo->prepare($sql_inventory_table);
                 $size = 10; // Default size, you can modify this as needed
-                $initial_item_id = $item_id; // Use the starter item selected by the user
                 $stmt_inventory_table->bindParam(1, $inventory_id, PDO::PARAM_INT);
                 $stmt_inventory_table->bindParam(2, $size, PDO::PARAM_INT);
-                $stmt_inventory_table->bindParam(3, $initial_item, PDO::PARAM_STR);
+                $stmt_inventory_table->bindParam(3, $item_id, PDO::PARAM_STR);
 
                 if ($stmt_inventory_table->execute()) {
                     echo "Character, CharacterInventory, and Inventory created successfully!<br><br>";
@@ -112,9 +120,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     echo "Character ID: " . htmlspecialchars($char_id) . "<br>";
                     echo "Level: " . htmlspecialchars($level) . "<br>";
                     echo "Starter Item: " . htmlspecialchars($starter_item) . "<br>";
-                    echo "Item Effects: " . htmlspecialchars($effect) . "<br>";
+                    echo "Item Effects: " . htmlspecialchars($effect) . "<br>" . "<br>";
                     //--------------Quest Selection Part---------------
-                    echo "<a href='battle.php'><button>Continue</button></a>";
+                    echo "<a href='quests.php'><button>Continue to your aventure</button></a>";
                 } else {
                     echo "Character and CharacterInventory created, but there was an error creating the inventory record: " . $stmt_inventory_table->errorInfo()[2];
                 }
