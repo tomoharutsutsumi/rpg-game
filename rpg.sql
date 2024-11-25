@@ -402,3 +402,30 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Create Players Table
+CREATE TABLE IF NOT EXISTS Players (
+    player_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+-- Create CharacterDetails Table
+CREATE TABLE IF NOT EXISTS CharacterDetails (
+    CharacterID INT AUTO_INCREMENT PRIMARY KEY,
+    UID INT NOT NULL, -- Foreign key referencing Players(player_id)
+    Level INT NOT NULL,
+    FOREIGN KEY (UID) REFERENCES Players(player_id)
+);
+
+-- Insert Sample Data
+INSERT IGNORE INTO Players (player_id, name) VALUES 
+(1, 'Esteban'), 
+(2, 'Maria');
+
+INSERT IGNORE INTO CharacterDetails (CharacterID, UID, Level) VALUES
+(1, 1, 10),
+(2, 2, 5);
+
+SELECT u.Username AS PlayerName, c.Level AS PlayerLevel
+FROM userdetails u
+JOIN characterdetails c ON u.UID = c.UID;

@@ -46,5 +46,10 @@ if ($quests) {
     </form>
 
     </div>
+<form method="POST" action="player_info.php">
+    <label for="player_name">Player Name:</label>
+    <input type="text" id="player_name" name="player_name" required>
+    <button type="submit">Get Player Info</button>
+</form>
 </body>
 </html>
