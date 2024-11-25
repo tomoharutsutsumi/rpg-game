@@ -3,12 +3,6 @@
     <title>Character Creation</title>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="login.html">Login</a></li>
-            <li><a href="register.html">Register</a></li>
-        </ul>
-    </nav>
     <p style="color: green; font-weight: bold;">User created successfully! You can now continue with your adventure.</p>
 
     <h1>Create Your Character</h1>
