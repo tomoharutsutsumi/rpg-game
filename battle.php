@@ -4,12 +4,6 @@
     <title>Battle Page</title>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="login.html">Login</a></li>
-            <li><a href="register.html">Register</a></li>
-        </ul>
-    </nav>
     <h1>Battle!</h1>
 
     <?php
