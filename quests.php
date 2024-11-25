@@ -34,6 +34,17 @@ if ($quests) {
     echo "<p>No quests available at the moment.</p>";
 }
 ?>
+
+    <br><br>
+    <form action="achievements.php" method="GET">
+        <button type="submit">Game Stats</button>
+    </form>
+
+    <br><br>
+    <form action="main_menu.html" method="GET">
+            <button type="submit">Return to Main Menu</button>
+    </form>
+
     </div>
 </body>
 </html>

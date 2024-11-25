@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 25-11-2024 a las 02:19:57
+-- Tiempo de generación: 25-11-2024 a las 07:30:58
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -50,7 +50,7 @@ CREATE TABLE `characterdetails` (
 --
 
 INSERT INTO `characterdetails` (`CharacterID`, `UID`, `Level`, `ItemID`) VALUES
-('joselscharacter', 1, 3, 10);
+('joselscharacter', 11, 5, 9);
 
 -- --------------------------------------------------------
 
@@ -68,7 +68,7 @@ CREATE TABLE `characterinventory` (
 --
 
 INSERT INTO `characterinventory` (`CharacterID`, `InventoryID`) VALUES
-('joselscharacter', 101);
+('joselscharacter', 111);
 
 -- --------------------------------------------------------
 
@@ -87,7 +87,7 @@ CREATE TABLE `inventory` (
 --
 
 INSERT INTO `inventory` (`InventoryID`, `Size`, `ItemID`) VALUES
-(101, '10', 10);
+(111, '10', 9);
 
 -- --------------------------------------------------------
 
@@ -150,15 +150,21 @@ INSERT INTO `monsters` (`MonsterID`, `QID`, `Level`, `ItemID`) VALUES
 
 CREATE TABLE `playerinfo` (
   `UID` int(11) NOT NULL,
-  `playedtime` int(11) DEFAULT NULL
+  `completedQID` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Volcado de datos para la tabla `playerinfo`
 --
 
-INSERT INTO `playerinfo` (`UID`, `playedtime`) VALUES
-(1, 0);
+INSERT INTO `playerinfo` (`UID`, `completedQID`) VALUES
+(11, 1),
+(11, 1),
+(11, 2),
+(11, 3),
+(11, 4),
+(11, 5),
+(12, 1);
 
 -- --------------------------------------------------------
 
@@ -221,7 +227,7 @@ CREATE TABLE `usercredentials` (
 --
 
 INSERT INTO `usercredentials` (`UserName`, `UserPassword`) VALUES
-('josels', '$2y$10$E5s2RBVJWBcv1OvnPpOrO.QU3pKD1AnebEhc8vwl022CwenFegoR2');
+('josels', '$2y$10$6rZYHtx4QoJVZ1kQlg/wH.DIAEYzvKgMg5WJ7XNnTbnqE2BoCclCC');
 
 -- --------------------------------------------------------
 
@@ -240,7 +246,7 @@ CREATE TABLE `userdetails` (
 --
 
 INSERT INTO `userdetails` (`UID`, `Username`, `DateCreated`) VALUES
-(1, 'josels', '2024-11-25');
+(11, 'josels', '2024-11-25');
 
 --
 -- Índices para tablas volcadas
@@ -294,7 +300,7 @@ ALTER TABLE `monsters`
 -- Indices de la tabla `playerinfo`
 --
 ALTER TABLE `playerinfo`
-  ADD PRIMARY KEY (`UID`);
+  ADD KEY `fk_completedQID` (`completedQID`);
 
 --
 -- Indices de la tabla `quest`
@@ -341,7 +347,7 @@ ALTER TABLE `monsters`
 -- AUTO_INCREMENT de la tabla `userdetails`
 --
 ALTER TABLE `userdetails`
-  MODIFY `UID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `UID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Restricciones para tablas volcadas
@@ -384,7 +390,7 @@ ALTER TABLE `monsters`
 -- Filtros para la tabla `playerinfo`
 --
 ALTER TABLE `playerinfo`
-  ADD CONSTRAINT `playerinfo_ibfk_1` FOREIGN KEY (`UID`) REFERENCES `userdetails` (`UID`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_completedQID` FOREIGN KEY (`completedQID`) REFERENCES `quest` (`QID`);
 
 --
 -- Filtros para la tabla `usercredentials`

@@ -68,14 +68,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'password' => $hashed_password,
         ]);
 
-        // Insert into PlayerInfo table
-        $sqlPlayerInfo = "INSERT INTO PlayerInfo (UID, playedtime) VALUES (:uid, :playedtime)";
-        $stmtPlayerInfo = $pdo->prepare($sqlPlayerInfo);
-        $stmtPlayerInfo->execute([
-            'uid' => $user_id,
-            'playedtime' => 0 // Initial played time set to 0
-        ]);
-
         // Commit the transaction
         $pdo->commit();
 
