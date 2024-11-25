@@ -194,6 +194,12 @@ $monster_health = $_SESSION['monster_health'];
     <title>Battle Mechanics</title>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="register.html">Register</a></li>
+        </ul>
+    </nav>
     <h1>Battle</h1>
 
     <!-- Display Character Details -->
