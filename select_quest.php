@@ -1,4 +1,14 @@
-<?php
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select a Quest</title>
+    <link rel="stylesheet" href="select_quest_styles.css">
+</head>
+<body>
+    <div class="quest-options">
+        <h1>Select Your Quest</h1>
+        <?php
 session_start();
 require_once 'db_connection.php';
 
@@ -25,3 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['qid'])) {
     }
 }
 ?>
+    </div>
+</body>
+</html>

@@ -1,4 +1,13 @@
-<?php
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quest Introduction</title>
+    <link rel="stylesheet" href="quest_intro_styles.css">
+</head>
+<body>
+    <div class="quest-details">
+        <?php
 session_start();
 
 if (isset($_SESSION['intro_text']) && isset($_SESSION['selected_quest'])) {
@@ -13,3 +22,6 @@ if (isset($_SESSION['intro_text']) && isset($_SESSION['selected_quest'])) {
     echo "<a href='quests.php'>Back to Quest Selection</a>";
 }
 ?>
+    </div>
+</body>
+</html>

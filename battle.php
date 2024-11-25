@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Battle Page</title>
+    <link rel="stylesheet" href="quest_intro_styles.css">
 </head>
 <body>
     <h1>Battle!</h1>

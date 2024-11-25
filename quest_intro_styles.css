@@ -1,0 +1,37 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #5d4a3c; /* Updated */
+    color: #e4c6a0; /* Updated */
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    color: #e4c6a0; /* Updated */
+}
+
+.quest-details {
+    background-color: #ad6b37; /* Updated */
+    padding: 15px;
+    margin: 20px auto;
+    width: 60%;
+    border-radius: 10px;
+    color: #e4c6a0; /* Updated */
+    text-align: left;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #ecb992; /* Updated */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #5d4a3c; /* Updated */
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #e4c6a0; /* Updated */
+    color: #5d4a3c; /* Updated */
+}

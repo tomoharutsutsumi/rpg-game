@@ -192,6 +192,7 @@ $monster_health = $_SESSION['monster_health'];
 <html>
 <head>
     <title>Battle Mechanics</title>
+    <link rel="stylesheet" href="battle_mechanics_styles.css">
 </head>
 <body>
     <h1>Battle</h1>
@@ -255,4 +256,5 @@ $monster_health = $_SESSION['monster_health'];
         </form>
     <?php endif; ?>
     </form>
+
 

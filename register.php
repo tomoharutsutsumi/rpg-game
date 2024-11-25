@@ -1,4 +1,15 @@
-<?php
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" href="register_php_styles.css">
+</head>
+<body>
+    <h1>Registration</h1>
+    <div class="message">
+        <?php
 session_start(); // Start the session
 // register.php
 
@@ -81,3 +92,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+    </div>
+</body>
+</html>

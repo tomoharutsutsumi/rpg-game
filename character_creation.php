@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <head>
     <title>Character Creation</title>
+    <link rel="stylesheet" href="character_creation_styles.css"
 </head>
 <body>
     <p style="color: green; font-weight: bold;">User created successfully! You can now continue with your adventure.</p>
